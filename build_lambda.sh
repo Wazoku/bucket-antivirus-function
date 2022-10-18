@@ -18,20 +18,23 @@
 set -e
 
 yum update -y
-yum install -y cpio python3-9-pip zip git json-c
+yum install -y cpio python3-pip zip git json-c
 pip install --no-cache-dir virtualenv
-virtualenv env
+python3.9 -m venv  env
 . env/bin/activate
 pip install --no-cache-dir -r requirements.txt
 
 lambda_output_file=/opt/app/build/lambda_$(git rev-parse --short HEAD).zip
 
 pushd /tmp
-yumdownloader -x \*i686 --archlist=x86_64 clamav clamav-lib clamav-update json-c
+yumdownloader -x \*i686 --archlist=x86_64 clamav clamav-lib clamav-update json-c  libtool-ltdl.x86_64 libxml2.x86_64 xz-libs.x86_64
 rpm2cpio clamav-0*.rpm | cpio -idmv
 rpm2cpio clamav-lib*.rpm | cpio -idmv
 rpm2cpio clamav-update*.rpm | cpio -idmv
 rpm2cpio json*.rpm | cpio -idmv
+rpm2cpio libt*.rpm | cpio -idmv
+rpm2cpio libxml*.rpm | cpio -idmv
+rpm2cpio xz*.rpm | cpio -idmv
 popd
 mkdir -p bin
 cp /tmp/usr/bin/clamscan /tmp/usr/bin/freshclam /tmp/usr/lib64/* bin/.
@@ -39,5 +42,5 @@ echo "DatabaseMirror database.clamav.net" > bin/freshclam.conf
 
 mkdir -p build
 zip -r9 $lambda_output_file *.py bin
-cd env/lib/python2.7/site-packages
+cd env/lib/python3.9/site-packages
 zip -r9 $lambda_output_file *

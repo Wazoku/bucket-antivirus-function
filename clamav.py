@@ -145,7 +145,7 @@ def scan_file(path):
         stdout=PIPE,
         env=av_env
     )
-    print"Processing scan results ...")
+    print("Processing scan results ...")
     out = av_proc.communicate()[0]
     print("clamscan stdout+stderr:\n%s" % str(out))
     print("clamscan result: %d" % av_proc.returncode )
