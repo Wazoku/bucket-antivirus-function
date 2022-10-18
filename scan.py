@@ -14,29 +14,21 @@
 import copy
 import json
 import os
+import pprint
 import urllib
 from datetime import datetime
 from distutils.util import strtobool
-import pprint
+
 import boto3
+
 import clamav
 import metrics
-from common import (
-    AV_DEFINITION_S3_BUCKET,
-    AV_DEFINITION_S3_PREFIX,
-    AV_FILE_CONTENTS,
-    AV_PROCESS_ORIGINAL_VERSION_ONLY,
-    AV_SCAN_START_METADATA,
-    AV_SCAN_START_SNS_ARN,
-    AV_STATUS_CLEAN,
-    AV_STATUS_INFECTED,
-    AV_STATUS_METADATA,
-    AV_STATUS_SNS_ARN,
-    AV_TIMESTAMP_METADATA,
-    create_dir,
-    s3,
-    s3_client,
-)
+from common import (AV_DEFINITION_S3_BUCKET, AV_DEFINITION_S3_PREFIX,
+                    AV_FILE_CONTENTS, AV_PROCESS_ORIGINAL_VERSION_ONLY,
+                    AV_SCAN_START_METADATA, AV_SCAN_START_SNS_ARN,
+                    AV_STATUS_CLEAN, AV_STATUS_INFECTED, AV_STATUS_METADATA,
+                    AV_STATUS_SNS_ARN, AV_TIMESTAMP_METADATA, create_dir, s3,
+                    s3_client)
 
 ENV = os.getenv("ENV", "")
 
@@ -86,6 +78,9 @@ def verify_s3_object_version(s3_object):
 
 
 def verify_s3_tags(s3_object):
+    print(s3_client.get_object_tagging(
+        Bucket=s3_object.bucket_name, Key=s3_object.key)['TagSet'])
+
     # Check no existing virus scan has taken place
     keys = [k['Key'] for k in s3_client.get_object_tagging(Bucket=s3_object.bucket_name,
                                                            Key=s3_object.key)['TagSet']]
@@ -196,10 +191,14 @@ def sns_scan_results(s3_object, result):
 
 def lambda_handler(event, context):
     start_time = datetime.utcnow()
+    print(os.getcwd())
+    print(os.system("ls -ls"))
+    print(os.system("/var/task/bin/clamscan /var/task/scan.py"))
     print("Script starting at %s\n" %
           (start_time.strftime("%Y/%m/%d %H:%M:%S UTC")))
-    s3_object = boto3.resource('s3').Object(event["Records"][0]["s3"]["bucket"]["name"],event["Records"][0]["s3"]["object"]["key"])
-    print("Checking uploaded object s3://"+s3_object.bucket_name+"/"+s3_object.key);
+    s3_object = boto3.resource('s3').Object(
+        event["Records"][0]["s3"]["bucket"]["name"], event["Records"][0]["s3"]["object"]["key"])
+    print("Checking uploaded object s3://"+s3_object.bucket_name+"/"+s3_object.key)
     verify_s3_object_version(s3_object)
     verify_s3_tags(s3_object)
     sns_start_scan(s3_object)
