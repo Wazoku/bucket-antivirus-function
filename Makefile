@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 current_dir := $(shell pwd)
 container_dir := /opt/app
 circleci := ${CIRCLECI}
@@ -19,7 +20,7 @@ circleci := ${CIRCLECI}
 all: archive
 
 clean:
-	rm -rf build/*
+	rm -rf build
 	mkdir build
 
 archive: clean
