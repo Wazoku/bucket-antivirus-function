@@ -14,36 +14,28 @@
 import copy
 import json
 import os
+import pprint
 import urllib
 from datetime import datetime
 from distutils.util import strtobool
 
 import boto3
+
 import clamav
 import metrics
-from common import (
-    AV_DEFINITION_S3_BUCKET,
-    AV_DEFINITION_S3_PREFIX,
-    AV_FILE_CONTENTS,
-    AV_PROCESS_ORIGINAL_VERSION_ONLY,
-    AV_SCAN_START_METADATA,
-    AV_SCAN_START_SNS_ARN,
-    AV_STATUS_CLEAN,
-    AV_STATUS_INFECTED,
-    AV_STATUS_METADATA,
-    AV_STATUS_SNS_ARN,
-    AV_TIMESTAMP_METADATA,
-    create_dir,
-    s3,
-    s3_client,
-)
+from common import (AV_DEFINITION_S3_BUCKET, AV_DEFINITION_S3_PREFIX,
+                    AV_FILE_CONTENTS, AV_PROCESS_ORIGINAL_VERSION_ONLY,
+                    AV_SCAN_START_METADATA, AV_SCAN_START_SNS_ARN,
+                    AV_STATUS_CLEAN, AV_STATUS_INFECTED, AV_STATUS_METADATA,
+                    AV_STATUS_SNS_ARN, AV_TIMESTAMP_METADATA, create_dir, s3,
+                    s3_client)
 
 ENV = os.getenv("ENV", "")
 
 
 def event_object(event):
     bucket = event['Records'][0]['s3']['bucket']['name']
-    key = urllib.unquote_plus(event['Records'][0]['s3']['object']['key'].encode('utf8'))
+    key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'])
     if (not bucket) or (not key):
         print("Unable to retrieve object from event.\n%s" % event)
         raise Exception("Unable to retrieve object from event.")
@@ -86,13 +78,16 @@ def verify_s3_object_version(s3_object):
 
 
 def verify_s3_tags(s3_object):
+    print(s3_client.get_object_tagging(
+        Bucket=s3_object.bucket_name, Key=s3_object.key)['TagSet'])
+
     # Check no existing virus scan has taken place
     keys = [k['Key'] for k in s3_client.get_object_tagging(Bucket=s3_object.bucket_name,
                                                            Key=s3_object.key)['TagSet']]
     if AV_STATUS_METADATA in keys:
-        raise Exception(
-            "Object already scanned %s" % s3_object.key
-        )
+            print("Object already scanned %s" % s3_object.key)
+            return 1
+    return 0
 
 
 def download_s3_object(s3_object, local_prefix):
@@ -198,12 +193,17 @@ def lambda_handler(event, context):
     start_time = datetime.utcnow()
     print("Script starting at %s\n" %
           (start_time.strftime("%Y/%m/%d %H:%M:%S UTC")))
-    s3_object = event_object(event)
+    s3_object = boto3.resource('s3').Object(
+        event["Records"][0]["s3"]["bucket"]["name"], event["Records"][0]["s3"]["object"]["key"])
+    print("Checking uploaded object s3://"+s3_object.bucket_name+"/"+s3_object.key)
     verify_s3_object_version(s3_object)
-    verify_s3_tags(s3_object)
+    ret = verify_s3_tags(s3_object)
+    if ret !=0:
+        return
     sns_start_scan(s3_object)
     file_path = download_s3_object(s3_object, "/tmp")
     clamav.update_defs_from_s3(AV_DEFINITION_S3_BUCKET, AV_DEFINITION_S3_PREFIX)
+    print("Going to scan .... ")
     scan_result = clamav.scan_file(file_path)
     print("Scan of s3://%s resulted in %s\n" %
           (os.path.join(s3_object.bucket_name, s3_object.key), scan_result)

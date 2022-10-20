@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-AMZ_LINUX_VERSION:=1
+
 current_dir := $(shell pwd)
 container_dir := /opt/app
 circleci := ${CIRCLECI}
@@ -20,19 +20,13 @@ circleci := ${CIRCLECI}
 all: archive
 
 clean:
-	rm -rf compile/lambda.zip
+	rm -rf build
+	mkdir build
 
 archive: clean
-ifeq ($(circleci), true)
-	docker create -v $(container_dir) --name src alpine:3.4 /bin/true
-	docker cp $(current_dir)/. src:$(container_dir)
-	docker run --rm -ti \
-		--volumes-from src \
-		amazonlinux:$(AMZ_LINUX_VERSION) \
-		/bin/bash -c "cd $(container_dir) && ./build_lambda.sh"
-else
 	docker run --rm -ti \
 		-v $(current_dir):$(container_dir) \
-		amazonlinux:$(AMZ_LINUX_VERSION) \
-		/bin/bash -c "cd $(container_dir) && ./build_lambda.sh"
-endif
+		--entrypoint "/bin/bash" \
+		public.ecr.aws/lambda/python:3.9 \
+		 -l -c 'cd $(container_dir) && ./build_lambda.sh'
+
