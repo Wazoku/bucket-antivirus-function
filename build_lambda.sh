@@ -38,7 +38,8 @@ yum install -y clamav-server \
 popd
 mkdir -p /tmp/bin
 cp /usr/bin/clamscan /usr/bin/freshclam /tmp/bin/.
-ldd /usr/bin/clamscan | grep "\/.*\.so[^ ]*" -o | grep -v -e crypto -e ssl -e keyutils -e libpcre -e libc.so -e libresolv -e libstdc++ -e libm.so -e libicu -e ld-linux -e gcc  -e libdl  -e selinux -e krb5 -e com_err   | xargs -I{} cp {} /tmp/bin/.
+cp  -v /usr/lib64/libssl3.so  /tmp/bin/
+ldd /usr/bin/clamscan /usr/bin/freshclam | grep "\/.*\.so[^ ]*" -o | grep -v -e crypto -e libssl\. -e keyutils -e libpcre -e libc.so -e libresolv -e libstdc++ -e libm.so -e libicu -e ld-linux -e gcc  -e libdl  -e selinux -e krb5 -e com_err   | xargs -I{} cp {} /tmp/bin/.
 echo "DatabaseMirror database.clamav.net" > /tmp/bin/freshclam.conf
 
 zip -r9 $lambda_output_file *.py
