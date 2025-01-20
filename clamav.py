@@ -73,7 +73,7 @@ def upload_defs_to_s3(bucket, prefix, local_path):
                 s3_client.put_object_tagging(
                     Bucket=s3_object.bucket_name,
                     Key=s3_object.key,
-                    Tagging={"TagSet": [{"Key": "md5", "Value": local_file_md5}]},
+                    Tagging={"TagSet": [{"Key": "md5", "Value": local_file_md5}]}
                 )
             else:
                 print("Not uploading %s because md5 on remote matches local." % filename)
