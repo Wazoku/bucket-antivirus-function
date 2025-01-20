@@ -18,7 +18,7 @@
 set -e
 
 yum update -y
-yum install -y cpio zip git json-c
+yum install -y cpio zip git json-c python3-pip
 pip install --no-cache-dir virtualenv
 virtualenv /tmp/env
 . /tmp/env/bin/activate
@@ -38,7 +38,7 @@ yum install -y clamav-server \
 popd
 mkdir -p /tmp/bin
 cp /usr/bin/clamscan /usr/bin/freshclam /tmp/bin/.
-cp  -v /usr/lib64/libssl3.so  /tmp/bin/
+#cp  -v /usr/lib64/libssl3.so  /tmp/bin/
 ldd /usr/bin/clamscan /usr/bin/freshclam | grep "\/.*\.so[^ ]*" -o | grep -v -e crypto -e libssl\. -e keyutils -e libpcre -e libc.so -e libresolv -e libstdc++ -e libm.so -e libicu -e ld-linux -e gcc  -e libdl  -e selinux -e krb5 -e com_err   | xargs -I{} cp {} /tmp/bin/.
 echo "DatabaseMirror database.clamav.net" > /tmp/bin/freshclam.conf
 

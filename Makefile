@@ -24,9 +24,9 @@ clean:
 	mkdir build
 
 archive: clean
-	docker run --rm -ti \
+	podman run --rm -ti \
 		-v $(current_dir):$(container_dir) \
 		--entrypoint "/bin/bash" \
-		public.ecr.aws/lambda/python:3.9 \
+		public.ecr.aws/amazonlinux/amazonlinux:latest \
 		 -l -c 'cd $(container_dir) && ./build_lambda.sh'
 
