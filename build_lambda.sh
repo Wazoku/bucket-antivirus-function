@@ -28,6 +28,7 @@ git config --global --add safe.directory /opt/app
 lambda_output_file=/opt/app/build/lambda_$(git rev-parse --short HEAD).zip
 
 pushd /tmp
+
 yum install -y clamav-server \
     clamav-data \
     clamav-update \

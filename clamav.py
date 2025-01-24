@@ -131,23 +131,20 @@ def scan_file(path):
     av_env = os.environ.copy()
     av_env["LD_LIBRARY_PATH"] = CLAMAVLIB_PATH
     print("Starting clamscan of %s." % path)
-    try:
-      av_proc = Popen(
-          [
-              CLAMSCAN_PATH,
-              "-v",
-              "-a",
-              "--stdout",
-              "-d",
-              AV_DEFINITION_PATH,
-              path
-          ],
-          stderr=STDOUT,
-          stdout=PIPE,
-          env=av_env
-      )
-    except subprocess.CalledProcessError as e:
-      print("Scan failed with",e.output)
+    av_proc = Popen(
+        [
+            CLAMSCAN_PATH,
+            "-v",
+            "-a",
+            "--stdout",
+            "-d",
+            AV_DEFINITION_PATH,
+            path
+        ],
+        stderr=STDOUT,
+        stdout=PIPE,
+        env=av_env
+    )
     print("Processing scan results ...")
     out = av_proc.communicate()[0]
     print("clamscan stdout+stderr:\n%s" % str(out))
