@@ -17,7 +17,6 @@ import os
 import pprint
 import urllib
 from datetime import datetime
-#from distutils.util import strtobool
 
 import boto3
 
@@ -77,8 +76,7 @@ def verify_s3_object_version(s3_object):
 
 def verify_s3_tags(s3_object):
     print(s3_client.get_object_tagging(
-        Bucket=s3_object.bucket_name, Key=s3_object.key)['TagSet']
-        )
+        Bucket=s3_object.bucket_name, Key=s3_object.key)['TagSet'])
 
     # Check no existing virus scan has taken place
     keys = [k['Key'] for k in s3_client.get_object_tagging(Bucket=s3_object.bucket_name,
@@ -194,8 +192,13 @@ def lambda_handler(event, context):
     start_time = datetime.utcnow()
     print("Script starting at %s\n" %
           (start_time.strftime("%Y/%m/%d %H:%M:%S UTC")))
-    s3_object = boto3.resource('s3',S3_REGION_NAME).Object(
-        bucket_name=event["Records"][0]["s3"]["bucket"]["name"], key=event["Records"][0]["s3"]["object"]["key"])
+    s3_object = (
+        boto3.resource('s3',S3_REGION_NAME)
+        .Object(
+            bucket_name=event["Records"][0]["s3"]["bucket"]["name"], 
+            key=event["Records"][0]["s3"]["object"]["key"],
+        )
+    )
 #    print("Checking uploaded object s3://"+s3_object.bucket_name+"/"+s3_object.key)
     verify_s3_object_version(s3_object)
     ret = verify_s3_tags(s3_object)

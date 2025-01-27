@@ -30,7 +30,8 @@ from common import (
     FRESHCLAM_PATH,
     create_dir,
     s3,
-    s3_client,s3_client_eu,
+    s3_client,
+    s3_client_eu,
     S3_REGION_NAME,
 )
 
