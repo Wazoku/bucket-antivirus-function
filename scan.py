@@ -17,7 +17,6 @@ import os
 import pprint
 import urllib
 from datetime import datetime
-from distutils.util import strtobool
 
 import boto3
 
@@ -27,10 +26,8 @@ from common import (AV_DEFINITION_S3_BUCKET, AV_DEFINITION_S3_PREFIX,
                     AV_FILE_CONTENTS, AV_PROCESS_ORIGINAL_VERSION_ONLY,
                     AV_SCAN_START_METADATA, AV_SCAN_START_SNS_ARN,
                     AV_STATUS_CLEAN, AV_STATUS_INFECTED, AV_STATUS_METADATA,
-                    AV_STATUS_SNS_ARN, AV_TIMESTAMP_METADATA, create_dir, s3,
-                    s3_client)
-
-ENV = os.getenv("ENV", "")
+                    AV_STATUS_SNS_ARN, AV_TIMESTAMP_METADATA, S3_REGION_NAME, 
+                    create_dir, s3,s3_client)
 
 
 def event_object(event):
@@ -190,12 +187,19 @@ def sns_scan_results(s3_object, result):
 
 
 def lambda_handler(event, context):
+    print("Event",event)
+    print("Context",context)
     start_time = datetime.utcnow()
     print("Script starting at %s\n" %
           (start_time.strftime("%Y/%m/%d %H:%M:%S UTC")))
-    s3_object = boto3.resource('s3').Object(
-        event["Records"][0]["s3"]["bucket"]["name"], event["Records"][0]["s3"]["object"]["key"])
-    print("Checking uploaded object s3://"+s3_object.bucket_name+"/"+s3_object.key)
+    s3_object = (
+        boto3.resource('s3',S3_REGION_NAME)
+        .Object(
+            bucket_name=event["Records"][0]["s3"]["bucket"]["name"], 
+            key=event["Records"][0]["s3"]["object"]["key"],
+        )
+    )
+#    print("Checking uploaded object s3://"+s3_object.bucket_name+"/"+s3_object.key)
     verify_s3_object_version(s3_object)
     ret = verify_s3_tags(s3_object)
     if ret !=0:
@@ -234,4 +238,7 @@ def lambda_handler(event, context):
 
 
 def str_to_bool(s):
-    return bool(strtobool(str(s)))
+    if s=='true':
+      return True
+    else:
+      return False

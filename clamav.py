@@ -31,6 +31,8 @@ from common import (
     create_dir,
     s3,
     s3_client,
+    s3_client_eu,
+    S3_REGION_NAME,
 )
 
 
@@ -112,7 +114,8 @@ def md5_from_file(filename):
 
 def md5_from_s3_tags(bucket, key):
     try:
-        tags = s3_client.get_object_tagging(Bucket=bucket, Key=key)["TagSet"]
+        print("BUCKET LOCATION IS ",S3_REGION_NAME)
+        tags = s3_client_eu.get_object_tagging(Bucket=bucket, Key=key )["TagSet"]
     except botocore.exceptions.ClientError as e:
         expected_errors = {'404', 'AccessDenied', 'NoSuchKey'}
         if e.response['Error']['Code'] in expected_errors:

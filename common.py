@@ -30,14 +30,16 @@ AV_TIMESTAMP_METADATA = os.getenv("AV_TIMESTAMP_METADATA", "av-timestamp")
 CLAMAVLIB_PATH = os.getenv("CLAMAVLIB_PATH", "./bin")
 CLAMSCAN_PATH = os.getenv("CLAMSCAN_PATH", "./bin/clamscan")
 FRESHCLAM_PATH = os.getenv("FRESHCLAM_PATH", "./bin/freshclam")
+S3_REGION_NAME = os.getenv("S3_REGION_NAME")
+AV_DEFINITION_REGION = os.getenv("AV_DEFINITION_REGION","eu-west-1")
 AV_PROCESS_ORIGINAL_VERSION_ONLY = os.getenv("AV_PROCESS_ORIGINAL_VERSION_ONLY", "False")
 
 AV_FILE_CONTENTS = os.getenv("AV_FILE_CONTENTS", "Virus detected. Contact Wazoku support.")  # noqa
 AV_DEFINITION_FILENAMES = ["main.cvd", "daily.cvd", "main.cld", "bytecode.cvd"]  # noqa
 
-s3 = boto3.resource('s3')
-s3_client = boto3.client('s3')
-
+s3 = boto3.resource('s3',region_name=S3_REGION_NAME)
+s3_client = boto3.client('s3',region_name=S3_REGION_NAME)
+s3_client_eu = boto3.client('s3',region_name=AV_DEFINITION_REGION)
 
 def create_dir(path):
     if not os.path.exists(path):
