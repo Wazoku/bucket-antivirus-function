@@ -45,5 +45,5 @@ echo "DatabaseMirror database.clamav.net" > /tmp/bin/freshclam.conf
 zip -r9 $lambda_output_file *.py
 cd /tmp/
 zip -r9 $lambda_output_file bin
-cd /tmp/env/lib/python3.9/site-packages
+cd /tmp/env/lib/python3.11/site-packages
 zip -r9 $lambda_output_file *

@@ -27,6 +27,6 @@ archive: clean
 	docker run --rm -ti \
 		-v $(current_dir):$(container_dir) \
 		--entrypoint "/bin/bash" \
-		public.ecr.aws/lambda/python:3.9 \
+		public.ecr.aws/lambda/python:3.11 \
 		 -l -c 'cd $(container_dir) && ./build_lambda.sh'
 
